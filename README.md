@@ -23,11 +23,20 @@ math. Suppliers Vault: 28+ verified GTA suppliers. AR measure: 85.6mm ref card.
 
 ## Pricing
 
-Free 14 days, then $20/mo. e-Transfer: forcebuildyou@gmail.com. Stars: 700.
+Free 14 days, then $29/mo. The voice app costs more than the toolkit ($20/mo)
+because it talks, listens, quotes, and answers customers. Trial first: a
+14-day free trial (name + shop + email, browser-local), then it locks until
+paid. Pay by e-Transfer $29 CAD to forcebuildyou@gmail.com (message: shop
+name) or 1,000 Telegram Stars via @stitchdesk_y_bot; tap "I've paid" to unlock
+30 days (trust unlock, browser-local — no server check, clearing browser data
+restarts the trial). Stitch is a web voice assistant: it talks with customers
+on the shop's site, it does NOT answer the shop phone line.
 
 ## Files
 
 - `index.html` — the whole app (single file, React via CDN-free inline build).
+- `payment-overlay.html` — the subscription overlay source (trial gate +
+  subscribe panel, vanilla JS, injected into index.html by build-payment.py).
 - `api/ask-stitch.js` — Vercel serverless function (Node, no dependencies).
 - `api/truper-chunks.json` — 80 chunks from the 4 Truper source files.
 

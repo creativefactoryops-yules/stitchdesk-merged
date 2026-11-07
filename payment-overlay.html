@@ -1,0 +1,125 @@
+<!-- StitchDesk subscription overlay: 14-day free trial, then $29/mo.
+     Vanilla JS, injected before </body> by build-payment.py. It lives OUTSIDE
+     the React root, so it never touches the minified app code.
+     State: localStorage 'stitchdesk_voice_sub_v1' {name, business, email,
+     trialStart ISO, paidUntil ISO|null}. Trial = 14 days from trialStart.
+     Paid = paidUntil in the future (30 days per payment, trust unlock).
+     Honest limits (stated in the panel): browser-local only; clearing
+     browser data restarts the trial; payment is confirmed by Yules. -->
+<style>
+#sd-sub-banner{position:fixed;left:12px;bottom:12px;z-index:9998;max-width:70vw;background:#0a100a;color:#b8b3ad;border:1px solid #2a2a2a;border-radius:999px;padding:7px 12px;font:11px/1.3 "JetBrains Mono",monospace;cursor:pointer}
+#sd-sub-fab{position:fixed;right:12px;bottom:12px;z-index:9998;background:#3DFF73;color:#000;border:0;border-radius:999px;padding:10px 16px;font:700 12px/1 "JetBrains Mono",monospace;cursor:pointer}
+#sd-sub-gate{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(5,8,5,.94);padding:16px}
+#sd-sub-gate .sd-card{width:100%;max-width:420px;background:#0a100a;border:1px solid #2a2a2a;border-radius:16px;padding:22px;color:#e8e4dc;font-family:"JetBrains Mono",monospace}
+#sd-sub-gate h2{margin:0 0 8px;font-size:17px;color:#3DFF73}
+#sd-sub-gate p{font-size:12px;line-height:1.6;color:#b8b3ad;margin:0 0 12px}
+#sd-sub-gate label{display:block;font-size:11px;color:#888;margin:10px 0 4px}
+#sd-sub-gate input{width:100%;box-sizing:border-box;background:#141414;border:1px solid #333;color:#fff;border-radius:10px;padding:10px 12px;font:13px "JetBrains Mono",monospace}
+#sd-sub-gate input:focus{outline:none;border-color:#3DFF73}
+#sd-sub-gate .sd-btn{display:block;width:100%;margin-top:14px;background:#3DFF73;color:#000;border:0;border-radius:999px;padding:12px;font:700 13px "JetBrains Mono",monospace;cursor:pointer}
+#sd-sub-gate .sd-btn2{display:block;width:100%;margin-top:8px;background:#1a1a1a;color:#e8e4dc;border:1px solid #333;border-radius:999px;padding:11px;font:700 12px "JetBrains Mono",monospace;cursor:pointer;text-align:center;text-decoration:none}
+#sd-sub-gate .sd-fine{font-size:10px;color:#777;line-height:1.5;margin-top:14px}
+#sd-sub-gate .sd-close{position:absolute;top:14px;right:16px;background:none;border:0;color:#888;font-size:22px;cursor:pointer}
+#sd-sub-gate .sd-price{font-size:22px;color:#fff;font-weight:700}
+#sd-sub-gate .sd-row{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#141414;border:1px solid #222;border-radius:10px;padding:10px 12px;margin:8px 0;font-size:12px}
+</style>
+<div id="sd-sub-banner" style="display:none" role="button" tabindex="0"></div>
+<button id="sd-sub-fab" type="button">Subscribe — $29/mo</button>
+<div id="sd-sub-gate" role="dialog" aria-label="StitchDesk subscription">
+  <div class="sd-card" style="position:relative">
+    <button id="sd-gate-close" class="sd-close" type="button" aria-label="Close" style="display:none">&times;</button>
+    <div id="sd-gate-trial">
+      <h2>Try Stitch free for 14 days</h2>
+      <p>Voice receptionist, estimator, and the suppliers vault for your shop. Free for 14 days, then <b style="color:#fff">$29/month</b>. No card needed to try.</p>
+      <label for="sd-name">Your name</label>
+      <input id="sd-name" type="text" autocomplete="name" placeholder="Your name">
+      <label for="sd-shop">Shop / business name</label>
+      <input id="sd-shop" type="text" autocomplete="organization" placeholder="Shop name">
+      <label for="sd-email">Email</label>
+      <input id="sd-email" type="email" autocomplete="email" placeholder="you@shop.com">
+      <button id="sd-start-trial" class="sd-btn" type="button">Start my free trial</button>
+      <p class="sd-fine">Trial and payment are checked in this browser only. If you clear browser data, the trial restarts. Your details stay on your device.</p>
+    </div>
+    <div id="sd-gate-pay" style="display:none">
+      <h2>Stitch is $29/month</h2>
+      <p id="sd-pay-status">Your free trial has ended.</p>
+      <p><span class="sd-price">$29/mo</span> <span style="color:#888;font-size:12px">after your 14-day free trial</span></p>
+      <div class="sd-row"><span>e-Transfer $29 CAD<br><span style="color:#888">to forcebuildyou@gmail.com<br>message: your shop name</span></span><button id="sd-copy-etransfer" class="sd-btn2" type="button" style="width:auto;margin:0;padding:8px 12px">Copy email</button></div>
+      <a class="sd-btn2" href="https://t.me/stitchdesk_y_bot" target="_blank" rel="noopener">Stars: 1,000 Stars via @stitchdesk_y_bot</a>
+      <button id="sd-paid" class="sd-btn" type="button">I&rsquo;ve paid — unlock 30 days</button>
+      <p class="sd-fine">After you pay by e-Transfer or Stars, tap &ldquo;I&rsquo;ve paid&rdquo; and your access unlocks for 30 days. Yules confirms payments — if your unlock doesn&rsquo;t stick, email forcebuildyou@gmail.com. Stitch is a web voice assistant: it talks with customers on your site, it does not answer your shop phone line.</p>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var KEY='stitchdesk_voice_sub_v1', TRIAL_DAYS=14, PAID_DAYS=30;
+  var EMAIL='forcebuildyou@gmail.com';
+  function el(id){ return document.getElementById(id); }
+  function load(){ try{ var s=JSON.parse(localStorage.getItem(KEY)||'null'); return (s&&typeof s==='object')?s:null; }catch(e){ return null; } }
+  function save(s){ try{ localStorage.setItem(KEY, JSON.stringify(s)); }catch(e){} }
+  function daysLeft(s){
+    if(!s||!s.trialStart) return 0;
+    var ms=Date.now()-new Date(s.trialStart).getTime();
+    if(isNaN(ms)||ms<0) return TRIAL_DAYS;
+    return TRIAL_DAYS-Math.floor(ms/86400000);
+  }
+  function isPaid(s){ return !!(s&&s.paidUntil&&new Date(s.paidUntil).getTime()>Date.now()); }
+  function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString([],{year:'numeric',month:'short',day:'numeric'}); }catch(e){ return ''; } }
+  function showGate(mode){
+    var gate=el('sd-sub-gate'), trial=el('sd-gate-trial'), pay=el('sd-gate-pay'), close=el('sd-gate-close');
+    gate.style.display='flex';
+    trial.style.display=(mode==='trial')?'block':'none';
+    pay.style.display=(mode==='trial')?'none':'block';
+    close.style.display=(mode==='panel')?'block':'none';
+  }
+  function hideGate(){ el('sd-sub-gate').style.display='none'; }
+  function refresh(){
+    var s=load(), banner=el('sd-sub-banner');
+    if(isPaid(s)){
+      banner.style.display='block';
+      banner.textContent='Subscribed until '+fmtDate(s.paidUntil)+' — thank you.';
+      hideGate(); return;
+    }
+    var left=daysLeft(s);
+    if(left>0){
+      banner.style.display='block';
+      banner.textContent='Free trial: '+left+' day'+(left===1?'':'s')+' left — Subscribe $29/mo';
+      hideGate(); return;
+    }
+    banner.style.display='none';
+    var status=el('sd-pay-status');
+    if(s&&s.trialStart){ status.textContent='Your free trial has ended. Thanks for trying Stitch.'; showGate('pay'); }
+    else { showGate('trial'); }
+  }
+  function openPanel(){
+    var s=load(), status=el('sd-pay-status');
+    if(isPaid(s)){ status.textContent='Subscribed until '+fmtDate(s.paidUntil)+' — thank you.'; }
+    else if(daysLeft(s)>0){ status.textContent='Free trial: '+daysLeft(s)+' day'+(daysLeft(s)===1?'':'s')+' left.'; }
+    else if(s&&s.trialStart){ status.textContent='Your free trial has ended. Thanks for trying Stitch.'; }
+    showGate('panel');
+    if(!s||!s.trialStart){ el('sd-gate-trial').style.display='block'; el('sd-gate-pay').style.display='none'; }
+  }
+  el('sd-start-trial').addEventListener('click', function(){
+    var name=el('sd-name').value.trim(), shop=el('sd-shop').value.trim(), email=el('sd-email').value.trim();
+    if(!name||!shop||!email||email.indexOf('@')<1){ alert('Please fill in your name, shop, and a valid email.'); return; }
+    save({name:name, business:shop, email:email, trialStart:new Date().toISOString(), paidUntil:null});
+    refresh();
+  });
+  el('sd-paid').addEventListener('click', function(){
+    var s=load()||{};
+    var until=new Date(Date.now()+PAID_DAYS*86400000).toISOString();
+    s.paidUntil=until; save(s); refresh();
+  });
+  el('sd-copy-etransfer').addEventListener('click', function(){
+    var btn=el('sd-copy-etransfer');
+    function done(){ btn.textContent='Copied!'; setTimeout(function(){ btn.textContent='Copy email'; }, 2000); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(EMAIL).then(done, done); }
+    else { done(); }
+  });
+  el('sd-sub-fab').addEventListener('click', openPanel);
+  el('sd-sub-banner').addEventListener('click', openPanel);
+  el('sd-gate-close').addEventListener('click', hideGate);
+  refresh();
+})();
+</script>
