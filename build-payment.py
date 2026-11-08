@@ -2,7 +2,7 @@
 """Payment v1 for the merged Stitch Voice Chat voice app: $29/mo, 14-day free trial.
 - Price: activation toast $20 -> $29.
 - Status pill: drop the stale "Ollama " prefix (children:["Ollama ",It] -> [It]).
-- Footer + referral links: stitchdesk-buildyou.netlify.app -> stitchdesk-merged.vercel.app.
+- Footer + referral links: stitchdesk-buildyou.netlify.app -> stitch-voice-chat.vercel.app.
 - Inject payment-overlay.html (trial gate + subscribe panel, vanilla JS,
   outside the React root) before </body>.
 DROPPED (audit details that are NOT in the deployed source — see
@@ -37,7 +37,7 @@ rep('Free 14 days, then $20/mo', 'Free 14 days, then $29/mo')
 rep('children:["Ollama ",It]', 'children:[It]')
 
 # 3. Footer + referral links -> live Vercel URL.
-rep('stitchdesk-buildyou.netlify.app', 'stitchdesk-merged.vercel.app', count=0, must=6)
+rep('stitchdesk-buildyou.netlify.app', 'stitch-voice-chat.vercel.app', count=0, must=6)
 
 # 4. Inject the subscription overlay before </body>.
 overlay = open(OVERLAY, encoding='utf-8').read()
