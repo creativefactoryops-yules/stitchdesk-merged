@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Payment v1 for the merged StitchDesk voice app: $29/mo, 14-day free trial.
+"""Payment v1 for the merged Stitch Voice Chat voice app: $29/mo, 14-day free trial.
 - Price: activation toast $20 -> $29.
 - Status pill: drop the stale "Ollama " prefix (children:["Ollama ",It] -> [It]).
 - Footer + referral links: stitchdesk-buildyou.netlify.app -> stitchdesk-merged.vercel.app.

@@ -1,4 +1,4 @@
-// ask-stitch — Vercel serverless function for the merged StitchDesk voice app.
+// ask-stitch — Vercel serverless function for the merged Stitch Voice Chat voice app.
 // Truper + Gemini brain. GEMINI_API_KEY comes from the Vercel project env only.
 // Never hardcode a key here, never accept one from the browser.
 // Flow: POST {question, dims, yardage, total, fabric}
@@ -180,7 +180,7 @@ module.exports = async (req, res) => {
       : "(No Truper chunk matched this question — answer only from the estimator numbers below, and say so if you do not know.)";
 
   const prompt =
-    "You are Stitch, copper robot CR-7, Toronto upholstery master at StitchDesk by CreativeFactory.studio. " +
+    "You are Stitch, copper robot CR-7, Toronto upholstery master at Stitch Voice Chat by CreativeFactory.studio. " +
     "Answer the customer in 2-4 short spoken sentences, plain words, no markdown, no asterisks, no bullet lists — the answer will be read aloud by speech synthesis.\n\n" +
     "HARD RULES — never break these:\n" +
     "1. NEVER invent dimensions, yardage, or prices. The estimator is the only source of numbers:\n" +

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the merged StitchDesk voice app for Vercel.
+"""Build the merged Stitch Voice Chat voice app for Vercel.
 
 Base: stitch-bot-fix/index-fixed.html (cleanest stitch-bot source + corrected RAG patch).
 Merges in (from the voice audit):

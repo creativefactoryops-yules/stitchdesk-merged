@@ -1,6 +1,6 @@
-# StitchDesk — merged voice app (Vercel)
+# Stitch Voice Chat — merged voice app (Vercel)
 
-The StitchDesk voice receptionist + estimator, merged from 46 unique builds
+The Stitch Voice Chat voice receptionist + estimator, merged from 46 unique builds
 audited 2026-11-07 (audit: `../stitchdesk-batch-2026-11-07/VOICE-AUDIT-2026-11-07.md`).
 
 Base: the live stitch-bot voice app (cleanest source), proven on Yules's phone.
@@ -29,7 +29,7 @@ because it talks, listens, quotes, and answers customers. Trial first: a
 paid. Pay by e-Transfer $29 CAD to forcebuildyou@gmail.com (message: shop
 name) or 1,000 Telegram Stars via @stitchdesk_y_bot; tap "I've paid" to unlock
 30 days (trust unlock, browser-local — no server check, clearing browser data
-restarts the trial). Stitch is a web voice assistant: it talks with customers
+restarts the trial). Stitch Voice Chat is a web voice assistant: it talks with customers
 on the shop's site, it does NOT answer the shop phone line.
 
 ## Files

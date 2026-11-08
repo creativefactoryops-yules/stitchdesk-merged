@@ -1,4 +1,4 @@
-<!-- StitchDesk subscription overlay: 14-day free trial, then $29/mo.
+<!-- Stitch Voice Chat subscription overlay: 14-day free trial, then $29/mo.
      Vanilla JS, injected before </body> by build-payment.py. It lives OUTSIDE
      the React root, so it never touches the minified app code.
      State: localStorage 'stitchdesk_voice_sub_v1' {name, business, email,
@@ -25,11 +25,11 @@
 </style>
 <div id="sd-sub-banner" style="display:none" role="button" tabindex="0"></div>
 <button id="sd-sub-fab" type="button">Subscribe — $29/mo</button>
-<div id="sd-sub-gate" role="dialog" aria-label="StitchDesk subscription">
+<div id="sd-sub-gate" role="dialog" aria-label="Stitch Voice Chat subscription">
   <div class="sd-card" style="position:relative">
     <button id="sd-gate-close" class="sd-close" type="button" aria-label="Close" style="display:none">&times;</button>
     <div id="sd-gate-trial">
-      <h2>Try Stitch free for 14 days</h2>
+      <h2>Try Stitch Voice Chat free for 14 days</h2>
       <p>Voice receptionist, estimator, and the suppliers vault for your shop. Free for 14 days, then <b style="color:#fff">$29/month</b>. No card needed to try.</p>
       <label for="sd-name">Your name</label>
       <input id="sd-name" type="text" autocomplete="name" placeholder="Your name">
@@ -41,13 +41,13 @@
       <p class="sd-fine">Trial and payment are checked in this browser only. If you clear browser data, the trial restarts. Your details stay on your device.</p>
     </div>
     <div id="sd-gate-pay" style="display:none">
-      <h2>Stitch is $29/month</h2>
+      <h2>Stitch Voice Chat is $29/month</h2>
       <p id="sd-pay-status">Your free trial has ended.</p>
       <p><span class="sd-price">$29/mo</span> <span style="color:#888;font-size:12px">after your 14-day free trial</span></p>
       <div class="sd-row"><span>e-Transfer $29 CAD<br><span style="color:#888">to forcebuildyou@gmail.com<br>message: your shop name</span></span><button id="sd-copy-etransfer" class="sd-btn2" type="button" style="width:auto;margin:0;padding:8px 12px">Copy email</button></div>
       <a class="sd-btn2" href="https://t.me/stitchdesk_y_bot" target="_blank" rel="noopener">Stars: 1,000 Stars via @stitchdesk_y_bot</a>
       <button id="sd-paid" class="sd-btn" type="button">I&rsquo;ve paid — unlock 30 days</button>
-      <p class="sd-fine">After you pay by e-Transfer or Stars, tap &ldquo;I&rsquo;ve paid&rdquo; and your access unlocks for 30 days. Yules confirms payments — if your unlock doesn&rsquo;t stick, email forcebuildyou@gmail.com. Stitch is a web voice assistant: it talks with customers on your site, it does not answer your shop phone line.</p>
+      <p class="sd-fine">After you pay by e-Transfer or Stars, tap &ldquo;I&rsquo;ve paid&rdquo; and your access unlocks for 30 days. Yules confirms payments — if your unlock doesn&rsquo;t stick, email forcebuildyou@gmail.com. Stitch Voice Chat is a web voice assistant: it talks with customers on your site, it does not answer your shop phone line.</p>
     </div>
   </div>
 </div>
