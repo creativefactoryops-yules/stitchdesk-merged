@@ -160,6 +160,18 @@ function fmtJob(job) {
   ].join("\n");
 }
 
+// Approximate yardage from the customer's own numbers, using the shop
+// formula. The model quotes this number; it must not parrot the slider
+// yardage or do the arithmetic itself.
+function yardageFromJob(job) {
+  const j = job && typeof job === "object" ? job : {};
+  const w = parseFloat(j.width), d = parseFloat(j.depth), h = parseFloat(j.height);
+  if (!isFinite(w) || !isFinite(d) || !isFinite(h)) return null;
+  let W = w, D = d;
+  if (j.units === "cm") { W = w / 2.54; D = d / 2.54; }
+  return ((W + D * 2 + 12) / 36 * 2.5 + 2).toFixed(1);
+}
+
 async function callGemini(model, apiKey, systemText, contents) {
   const url =
     "https://generativelanguage.googleapis.com/v1beta/models/" +
@@ -231,6 +243,7 @@ module.exports = async (req, res) => {
   const fabric = body.fabric || "not chosen";
   const history = Array.isArray(body.history) ? body.history.slice(-12) : [];
   const job = body.job && typeof body.job === "object" ? body.job : {};
+  const jobYardage = yardageFromJob(job);
 
   const top = pickChunks(question, 7);
   const context =
@@ -249,9 +262,9 @@ module.exports = async (req, res) => {
     "HARD RULES — never break these:\n" +
     "1. Introduce yourself only if the conversation history is empty. Never repeat the intro. " +
     "The customer was already greeted in this chat with \"Hi, I'm Stitch. Tell me what you'd like reupholstered, and the width, depth and height if you have them.\" — that greeting counts as your introduction, so do not introduce yourself again.\n" +
-    "2. Read the job sheet and the history before answering. Never ask for something the customer already gave.\n" +
+    "2. Read the job sheet and the history before answering. Never ask for something the customer already gave. Show you remember the job: when the job sheet names a piece, mention it in your reply where it fits (for example, 'for your sofa').\n" +
     "3. Answer the customer's actual message first, in 2 to 4 short sentences.\n" +
-    "4. If units are unclear, ask once: inches or cm?\n" +
+    "4. If units are unclear, ask once: inches or cm? Do not state a unit until the customer confirms it.\n" +
     "5. Ask for one missing thing at a time (for example height), and say why you need it.\n" +
     "6. Write numbers as digits (75 in, 45 in). Never spell them out.\n" +
     "7. Never mention chunks, lot numbers, reference sizes like 85.6mm, or internal names. Plain shop talk only.\n" +
@@ -259,11 +272,12 @@ module.exports = async (req, res) => {
     "The estimator values below are slider defaults, NOT measurements the customer gave. " +
     "If a dimension was not given, say so — do not reuse slider numbers as if the customer gave them. " +
     "If the customer asks a price and no total was calculated, say the total is not calculated yet and ask for W/D/H — do not guess a dollar figure.\n" +
-    "9. Yardage: when the job sheet has width, depth and height, use the shop formula (W + D x 2 + 12) / 36 x 2.5 + 2 yd boost to give approximate yardage, and state the full W/D/H in your reply. If units are cm, convert first (1 in = 2.54 cm). Always call the yardage approximate and say to verify with tape.\n" +
+    "9. Yardage: the yardage from the job sheet is computed for you below with the shop formula (W + D x 2 + 12) / 36 x 2.5 + 2 yd boost — quote that number, and state the full W/D/H in your reply. Do not use the slider yardage. Always call the yardage approximate and say to verify with tape.\n" +
     "10. Use ONLY the shop book knowledge below for facts (prices, suppliers, materials, methods). If the knowledge does not cover it, say 'I do not know that from the shop book' and give the closest thing you do know.\n" +
     "11. Keep supplier names, phone numbers, and technical terms exactly as written in the knowledge.\n" +
     "12. Use the shop book chunks. Terms have several names: mention the common alternatives. Never invent prices: quote only the shop's own estimator or price sheet, and label anything else as a rough range the shop must confirm. Legends are 'traditionally said'. Fire-code or legal questions go to shop staff.\n" +
     "\nJOB SHEET (what the customer has told you so far):\n" + fmtJob(job) + "\n\n" +
+    "YARDAGE FROM THE JOB SHEET (shop formula, approximate): " + (jobYardage ? jobYardage + " yd — quote this number when the customer asks for yardage." : "not computable yet — a dimension is still missing.") + "\n\n" +
     "ESTIMATOR (slider values — unconfirmed defaults, not customer measurements):\n" +
     "dims (W x D x H) = " + dims + "; yardage = " + yardage + " yd; total estimate = $" + total + "; fabric = " + fabric + ".\n\n" +
     "SHOP BOOK KNOWLEDGE (top matches):\n" + context;
