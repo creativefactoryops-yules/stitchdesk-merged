@@ -1,10 +1,12 @@
 // ask-stitch — Vercel serverless function for the merged Stitch Voice Chat voice app.
 // Truper + Gemini brain. GEMINI_API_KEY comes from the Vercel project env only.
 // Never hardcode a key here, never accept one from the browser.
-// Flow: POST {question, dims, yardage, total, fabric}
+// Flow: POST {question, dims, yardage, total, fabric, history, job}
 //   -> score truper-chunks.json + kb/stitch-kb-all.json by keyword overlap
 //      (title x3, aliases x2, text x1), take top 7
 //   -> call Gemini (x-goog-api-key header; AQ. keys only work that way)
+//      with the job sheet + KB chunks in the system instruction and the
+//      conversation history as real alternating turns, new question last
 //   -> return {answer, source, model, chunks}
 // On any Gemini failure: return 502 so the page falls back to local
 // Ollama, then to its canned yu() replies (labelled honestly on the page).
@@ -123,7 +125,42 @@ function pickChunks(question, n) {
     .map((s) => s.chunk);
 }
 
-async function callGemini(model, apiKey, prompt) {
+// Turn the browser's history [{role: "user"|"model", text}] into Gemini
+// contents: strictly alternating turns, starting with a user turn.
+function toTurns(history) {
+  const turns = [];
+  for (const m of Array.isArray(history) ? history : []) {
+    if (!m || typeof m.text !== "string" || !m.text.trim()) continue;
+    const role = m.role === "model" ? "model" : "user";
+    const text = m.text.trim().slice(0, 1500);
+    if (turns.length && turns[turns.length - 1].role === role) {
+      turns[turns.length - 1].parts[0].text += "\n" + text;
+    } else {
+      turns.push({ role, parts: [{ text }] });
+    }
+  }
+  // Gemini contents must start with a user turn.
+  while (turns.length && turns[0].role !== "user") turns.shift();
+  return turns;
+}
+
+// The job sheet is what the customer actually said. Every number in it
+// is customer-given; anything not in it was never stated.
+function fmtJob(job) {
+  const j = job && typeof job === "object" ? job : {};
+  const dim = (v) => (v == null || v === "" ? "not given" : v + " (customer said it)");
+  return [
+    "piece: " + (j.piece || "not given"),
+    "width: " + dim(j.width),
+    "depth: " + dim(j.depth),
+    "height: " + dim(j.height),
+    "units: " + (j.units || "not given"),
+    "fabric: " + (j.fabric || "not given"),
+    "notes: " + (j.notes || "none"),
+  ].join("\n");
+}
+
+async function callGemini(model, apiKey, systemText, contents) {
   const url =
     "https://generativelanguage.googleapis.com/v1beta/models/" +
     model +
@@ -138,7 +175,8 @@ async function callGemini(model, apiKey, prompt) {
     // Vercel Hobby): fail the attempt after 8s and let the rotation move on.
     signal: AbortSignal.timeout(8000),
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      systemInstruction: { parts: [{ text: systemText }] },
+      contents,
       generationConfig: { temperature: 0.3, maxOutputTokens: 400 },
     }),
   });
@@ -191,6 +229,8 @@ module.exports = async (req, res) => {
   const yardage = body.yardage || "not calculated";
   const total = body.total || "not calculated";
   const fabric = body.fabric || "not chosen";
+  const history = Array.isArray(body.history) ? body.history.slice(-12) : [];
+  const job = body.job && typeof body.job === "object" ? body.job : {};
 
   const top = pickChunks(question, 7);
   const context =
@@ -198,29 +238,40 @@ module.exports = async (req, res) => {
       ? top
           .map((c) => "[" + c.label + " / " + c.title + " / " + c.source + "]\n" + c.text)
           .join("\n\n")
-      : "(No shop book chunk matched this question — answer only from the estimator numbers below, and say so if you do not know.)";
+      : "(No shop book chunk matched this question — answer only from the job sheet and estimator numbers below, and say so if you do not know.)";
 
-  const prompt =
+  const turns = toTurns(history);
+  turns.push({ role: "user", parts: [{ text: question }] });
+
+  const systemText =
     "You are Stitch, copper robot CR-7, Toronto upholstery master at Stitch Voice Chat by CreativeFactory.studio. " +
     "Answer the customer in 2-4 short spoken sentences, plain words, no markdown, no asterisks, no bullet lists — the answer will be read aloud by speech synthesis.\n\n" +
     "HARD RULES — never break these:\n" +
-    "1. NEVER invent dimensions, yardage, or prices. The estimator is the only source of numbers:\n" +
-    "   dims (W x D x H inches) = " + dims + "; yardage = " + yardage + " yd; total estimate = $" + total + "; fabric = " + fabric + ".\n" +
-    "   These are estimator slider values, NOT measurements the customer gave — treat them as unconfirmed defaults.\n" +
-    "   If the customer asks a price and no total was calculated, say the total is not calculated yet and ask for W/D/H — do not guess a dollar figure.\n" +
-    "   If a dimension was not given, say so — do not reuse default slider numbers as if the customer gave them.\n" +
-    "2. Use ONLY the shop book knowledge below for facts (prices, suppliers, materials, methods). If the knowledge does not cover it, say 'I do not know that from the shop book' and give the closest thing you do know.\n" +
-    "3. Keep supplier names, phone numbers, and technical terms exactly as written in the knowledge.\n" +
-    "4. Use the shop book chunks. Terms have several names: mention the common alternatives. Never invent prices: quote only the shop's own estimator or price sheet, and label anything else as a rough range the shop must confirm. Legends are 'traditionally said'. Fire-code or legal questions go to shop staff.\n" +
-    "\n" +
-    "SHOP BOOK KNOWLEDGE (top matches):\n" + context + "\n\n" +
-    "CUSTOMER QUESTION: " + question + "\n\n" +
-    "Answer as Stitch, in your shop voice:";
+    "1. Introduce yourself only if the conversation history is empty. Never repeat the intro. " +
+    "The customer was already greeted in this chat with \"Hi, I'm Stitch. Tell me what you'd like reupholstered, and the width, depth and height if you have them.\" — that greeting counts as your introduction, so do not introduce yourself again.\n" +
+    "2. Read the job sheet and the history before answering. Never ask for something the customer already gave.\n" +
+    "3. Answer the customer's actual message first, in 2 to 4 short sentences.\n" +
+    "4. If units are unclear, ask once: inches or cm?\n" +
+    "5. Ask for one missing thing at a time (for example height), and say why you need it.\n" +
+    "6. Write numbers as digits (75 in, 45 in). Never spell them out.\n" +
+    "7. Never mention chunks, lot numbers, reference sizes like 85.6mm, or internal names. Plain shop talk only.\n" +
+    "8. Never invent dimensions, yardage, or prices. The job sheet below is what the customer actually said — use those numbers first. " +
+    "The estimator values below are slider defaults, NOT measurements the customer gave. " +
+    "If a dimension was not given, say so — do not reuse slider numbers as if the customer gave them. " +
+    "If the customer asks a price and no total was calculated, say the total is not calculated yet and ask for W/D/H — do not guess a dollar figure.\n" +
+    "9. Yardage: when the job sheet has width, depth and height, use the shop formula (W + D x 2 + 12) / 36 x 2.5 + 2 yd boost to give approximate yardage, and state the full W/D/H in your reply. If units are cm, convert first (1 in = 2.54 cm). Always call the yardage approximate and say to verify with tape.\n" +
+    "10. Use ONLY the shop book knowledge below for facts (prices, suppliers, materials, methods). If the knowledge does not cover it, say 'I do not know that from the shop book' and give the closest thing you do know.\n" +
+    "11. Keep supplier names, phone numbers, and technical terms exactly as written in the knowledge.\n" +
+    "12. Use the shop book chunks. Terms have several names: mention the common alternatives. Never invent prices: quote only the shop's own estimator or price sheet, and label anything else as a rough range the shop must confirm. Legends are 'traditionally said'. Fire-code or legal questions go to shop staff.\n" +
+    "\nJOB SHEET (what the customer has told you so far):\n" + fmtJob(job) + "\n\n" +
+    "ESTIMATOR (slider values — unconfirmed defaults, not customer measurements):\n" +
+    "dims (W x D x H) = " + dims + "; yardage = " + yardage + " yd; total estimate = $" + total + "; fabric = " + fabric + ".\n\n" +
+    "SHOP BOOK KNOWLEDGE (top matches):\n" + context;
 
   let lastErr = null;
   for (const model of MODELS) {
     try {
-      let answer = await callGemini(model, apiKey, prompt);
+      let answer = await callGemini(model, apiKey, systemText, turns);
       answer = answer.replace(/[*_`#]/g, "").replace(/\s+/g, " ").trim().slice(0, 900);
       return res.status(200).json({
         answer,
