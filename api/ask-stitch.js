@@ -2,7 +2,8 @@
 // Truper + Gemini brain. GEMINI_API_KEY comes from the Vercel project env only.
 // Never hardcode a key here, never accept one from the browser.
 // Flow: POST {question, dims, yardage, total, fabric}
-//   -> score truper-chunks.json by keyword overlap, take top 5
+//   -> score truper-chunks.json + kb/stitch-kb-all.json by keyword overlap
+//      (title x3, aliases x2, text x1), take top 7
 //   -> call Gemini (x-goog-api-key header; AQ. keys only work that way)
 //   -> return {answer, source, model, chunks}
 // On any Gemini failure: return 502 so the page falls back to local
@@ -32,17 +33,35 @@ let CHUNKS = null;
 let IDF = null;
 function loadChunks() {
   if (CHUNKS) return CHUNKS;
+  let truper = [];
   try {
-    const raw = fs.readFileSync(path.join(__dirname, "truper-chunks.json"), "utf8");
-    CHUNKS = JSON.parse(raw);
+    truper = JSON.parse(fs.readFileSync(path.join(__dirname, "truper-chunks.json"), "utf8"));
   } catch (e) {
-    CHUNKS = [];
+    truper = [];
   }
+  let kb = [];
+  try {
+    kb = JSON.parse(fs.readFileSync(path.join(__dirname, "kb", "stitch-kb-all.json"), "utf8"));
+  } catch (e) {
+    kb = [];
+  }
+  // Normalize the v2 shop-book chunks to the same shape as the truper
+  // chunks: label = topic, source = "shop book", aliases kept for scoring.
+  kb = kb.map((c) => ({
+    id: c.id,
+    label: c.topic || "shop book",
+    title: c.title || "",
+    aliases: Array.isArray(c.aliases) ? c.aliases : [],
+    source: "shop book",
+    text: c.text || "",
+  }));
+  CHUNKS = truper.concat(kb);
   // Inverse document frequency: generic words ("upholstery", "customer",
   // "furniture") appear in almost every chunk and must not win retrieval.
   const df = {};
   for (const c of CHUNKS) {
-    for (const w of new Set(tokens(c.title + " " + c.text))) {
+    const aliasText = (c.aliases || []).join(" ");
+    for (const w of new Set(tokens(c.title + " " + aliasText + " " + c.text))) {
       df[w] = (df[w] || 0) + 1;
     }
   }
@@ -75,11 +94,13 @@ function pickChunks(question, n) {
   const q = [...new Set(tokens(question))];
   const scored = loadChunks().map((c) => {
     const titleSet = new Set(tokens(c.title));
+    const aliasSet = new Set(tokens((c.aliases || []).join(" ")));
     const cSet = new Set(tokens(c.text));
     let score = 0;
     for (const w of q) {
       const idf = IDF[w] || 1;
       if (titleSet.has(w)) score += idf * 3; // title match weighs most
+      else if (aliasSet.has(w)) score += idf * 2; // alias = another name for it
       else if (cSet.has(w)) score += idf;
     }
     // Small bonuses for question-type signals.
@@ -171,13 +192,13 @@ module.exports = async (req, res) => {
   const total = body.total || "not calculated";
   const fabric = body.fabric || "not chosen";
 
-  const top = pickChunks(question, 5);
+  const top = pickChunks(question, 7);
   const context =
     top.length > 0
       ? top
           .map((c) => "[" + c.label + " / " + c.title + " / " + c.source + "]\n" + c.text)
           .join("\n\n")
-      : "(No Truper chunk matched this question — answer only from the estimator numbers below, and say so if you do not know.)";
+      : "(No shop book chunk matched this question — answer only from the estimator numbers below, and say so if you do not know.)";
 
   const prompt =
     "You are Stitch, copper robot CR-7, Toronto upholstery master at Stitch Voice Chat by CreativeFactory.studio. " +
@@ -188,9 +209,11 @@ module.exports = async (req, res) => {
     "   These are estimator slider values, NOT measurements the customer gave — treat them as unconfirmed defaults.\n" +
     "   If the customer asks a price and no total was calculated, say the total is not calculated yet and ask for W/D/H — do not guess a dollar figure.\n" +
     "   If a dimension was not given, say so — do not reuse default slider numbers as if the customer gave them.\n" +
-    "2. Use ONLY the Truper knowledge below for facts (prices, suppliers, materials, methods). If the knowledge does not cover it, say 'I do not know that from the shop book' and give the closest thing you do know.\n" +
-    "3. Keep supplier names, phone numbers, and technical terms exactly as written in the knowledge.\n\n" +
-    "TRUPER KNOWLEDGE (top matches):\n" + context + "\n\n" +
+    "2. Use ONLY the shop book knowledge below for facts (prices, suppliers, materials, methods). If the knowledge does not cover it, say 'I do not know that from the shop book' and give the closest thing you do know.\n" +
+    "3. Keep supplier names, phone numbers, and technical terms exactly as written in the knowledge.\n" +
+    "4. Use the shop book chunks. Terms have several names: mention the common alternatives. Never invent prices: quote only the shop's own estimator or price sheet, and label anything else as a rough range the shop must confirm. Legends are 'traditionally said'. Fire-code or legal questions go to shop staff.\n" +
+    "\n" +
+    "SHOP BOOK KNOWLEDGE (top matches):\n" + context + "\n\n" +
     "CUSTOMER QUESTION: " + question + "\n\n" +
     "Answer as Stitch, in your shop voice:";
 
