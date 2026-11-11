@@ -1,7 +1,9 @@
 {
   "name": "stitch-voice-chat",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "author": "Yules · CreativeFactory.studio",
   "type": "module",
   "description": "Stitch Voice Chat v2: AI reception, estimates, renders and job tracking for upholstery shops. By CreativeFactory.studio / buildyou.",
   "engines": {

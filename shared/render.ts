@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Prompt building for AI previews. Used by the browser and by /api/render.
 
 export const RENDER_LABEL = 'AI preview, final may vary.';

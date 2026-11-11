@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import type { FaqEntry } from '../../shared/types';
 import type {
   Booking, BookingInput, Client, Job, JobView, Message, Photo, PublicShopData, Quote, Shop, StaffSession, Supplier, Swatch,

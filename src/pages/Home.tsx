@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { PageHeading } from '../lib/a11y';
@@ -19,7 +20,7 @@ export default function Home() {
           <ul>
             <li>Chat by text or voice, with a job sheet that fills itself</li>
             <li>Instant yardage and price range with 13% HST shown</li>
-            <li>Before and after previews from a photo</li>
+            <li>AI style previews in a new fabric (made from the client's photo only when photo editing is switched on)</li>
             <li>Dream-project builder, swatch library, booking</li>
             <li>A private link to follow their job</li>
           </ul>

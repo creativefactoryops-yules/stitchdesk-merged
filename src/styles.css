@@ -1,3 +1,5 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. All rights reserved. */
+/* Element rules skip the .oc subtree (the restored old chat look), which has its own styles in src/old/old-chat.css. */
 /* Stitch terminal look: near-black, lime, dim olive, monospace. Mobile first, big tap targets. */
 :root {
   --bg: #070a0a;
@@ -18,12 +20,12 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.55; }
 body { min-height: 100vh; -webkit-text-size-adjust: 100%; }
-a { color: var(--lime); text-underline-offset: 3px; }
-h1, h2, h3 { line-height: 1.25; margin: 0 0 0.6rem; }
-h1 { font-size: 1.45rem; color: var(--lime); }
-h2 { font-size: 1.15rem; color: var(--lime); }
-h3 { font-size: 1rem; }
-p { margin: 0 0 0.8rem; }
+a:where(:not(.oc *)) { color: var(--lime); text-underline-offset: 3px; }
+h1:where(:not(.oc *)), h2:where(:not(.oc *)), h3:where(:not(.oc *)) { line-height: 1.25; margin: 0 0 0.6rem; }
+h1:where(:not(.oc *)) { font-size: 1.45rem; color: var(--lime); }
+h2:where(:not(.oc *)) { font-size: 1.15rem; color: var(--lime); }
+h3:where(:not(.oc *)) { font-size: 1rem; }
+p:where(:not(.oc *)) { margin: 0 0 0.8rem; }
 small, .muted { color: var(--muted); }
 :focus-visible { outline: 3px solid var(--lime); outline-offset: 2px; border-radius: 4px; }
 h1:focus, h2:focus { outline: none; }
@@ -39,17 +41,17 @@ h1:focus, h2:focus { outline: none; }
 .brand .dot { width: 10px; height: 10px; background: var(--lime); border-radius: 50%; box-shadow: 0 0 10px var(--lime); }
 .demo-banner { background: #1b2410; color: var(--warn); border: 1px solid #4a5a1a; padding: 8px 12px; border-radius: var(--radius); margin: 10px 0; font-size: 0.9rem; }
 
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin: 0 0 14px; }
+.card:where(:not(.oc *)) { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; margin: 0 0 14px; }
 .card.tight { padding: 10px; }
-.grid { display: grid; gap: 12px; }
+.grid:where(:not(.oc *)) { display: grid; gap: 12px; }
 @media (min-width: 720px) { .grid.two { grid-template-columns: 1fr 1fr; } .grid.three { grid-template-columns: repeat(3, 1fr); } .grid.four { grid-template-columns: repeat(4, 1fr); } }
 
-button, .btn {
+button:where(:not(.oc *)), .btn {
   font: inherit; min-height: var(--tap); min-width: var(--tap); padding: 10px 16px; border-radius: var(--radius);
   border: 1px solid var(--olive); background: var(--panel-2); color: var(--text); cursor: pointer; display: inline-flex;
   align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center;
 }
-button:hover, .btn:hover { border-color: var(--lime); }
+button:where(:not(.oc *)):hover, .btn:hover { border-color: var(--lime); }
 button.primary, .btn.primary { background: var(--lime); color: #070a0a; border-color: var(--lime); font-weight: 800; }
 button.danger { border-color: #6b2a22; color: var(--danger); }
 button[disabled] { opacity: 0.55; cursor: not-allowed; }
@@ -57,16 +59,16 @@ button[disabled] { opacity: 0.55; cursor: not-allowed; }
 .row.end { justify-content: flex-end; }
 .stack > * + * { margin-top: 10px; }
 
-label { display: block; font-weight: 700; margin-bottom: 4px; }
+label:where(:not(.oc *)) { display: block; font-weight: 700; margin-bottom: 4px; }
 .field { margin-bottom: 12px; }
 .hint { font-size: 0.85rem; color: var(--muted); margin-top: 3px; }
-input, select, textarea {
+input:where(:not(.oc *)), select:where(:not(.oc *)), textarea:where(:not(.oc *)) {
   font: inherit; width: 100%; min-height: var(--tap); padding: 10px 12px; border-radius: var(--radius);
   background: #050807; color: var(--text); border: 1px solid #3a4a2c;
 }
-input[type='checkbox'], input[type='radio'] { width: 24px; height: 24px; min-height: 24px; accent-color: var(--lime); }
+input[type='checkbox']:where(:not(.oc *)), input[type='radio']:where(:not(.oc *)) { width: 24px; height: 24px; min-height: 24px; accent-color: var(--lime); }
 .check { display: flex; gap: 10px; align-items: center; font-weight: 400; min-height: var(--tap); }
-textarea { min-height: 96px; resize: vertical; }
+textarea:where(:not(.oc *)) { min-height: 96px; resize: vertical; }
 fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; margin: 0 0 12px; }
 legend { font-weight: 700; padding: 0 6px; }
 
@@ -133,3 +135,9 @@ details summary { cursor: pointer; min-height: var(--tap); display: flex; align-
   .wrap { max-width: none; padding: 0; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+
+/* v2.1 footer (all pages) */
+.footer-links { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; padding: 0; margin: 8px 0; }
+.footer-links a { display: inline-block; padding: 6px 2px; min-height: 24px; }
+.site-footer { text-align: center; padding-top: 0; }
+.site-footer p { margin: 0 0 6px; }

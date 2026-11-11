@@ -1,6 +1,7 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { store } from '../../data';
+import { isDemo, store } from '../../data';
 import { ErrorNote, Field } from '../../components/Layout';
 import { JobSheetView } from '../../components/JobSheetView';
 import { PageHeading } from '../../lib/a11y';
@@ -39,6 +40,7 @@ export default function BookPanel() {
         beforePhoto: p.beforePhoto,
       });
       setToken(res.token);
+      p.set({ jobToken: res.token });
     } catch (err) {
       setError((err as Error).message || 'Booking failed. Please try again.');
     } finally {
@@ -57,6 +59,7 @@ export default function BookPanel() {
           </p>
           <h2>Your private job link</h2>
           <p>Keep this link. It shows your job's progress, photos and quote, and lets you message the shop.</p>
+          {isDemo && <p className="notice">Demo mode: this link only opens on this phone, in this browser.</p>}
           <p style={{ wordBreak: 'break-all' }}>
             <Link to={`/j/${token}`}>{link}</Link>
           </p>

@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // POST /api/render
 // Dream build:   { mode: "dream", answers: DreamAnswers }
 // Before/after:  { mode: "photo", image: "data:image/jpeg;base64,...", piece, fabric, colour, style, description? }

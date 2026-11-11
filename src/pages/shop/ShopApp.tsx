@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { createContext, useCallback, useContext, useEffect, useState, type FormEvent } from 'react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { store, isDemo } from '../../data';
@@ -166,8 +167,10 @@ function Login() {
 }
 
 function CreateShop({ onDone, error: initialError }: { onDone: (s: Shop) => void; error: string | null }) {
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
+  // "Set Up + Activate" on the client chat page passes the shop name it was given.
+  const preset = sessionStorage.getItem('stitch_new_shop_name') ?? '';
+  const [name, setName] = useState(preset);
+  const [slug, setSlug] = useState(slugify(preset));
   const [error, setError] = useState<string | null>(initialError);
   const [busy, setBusy] = useState(false);
 

@@ -1,7 +1,8 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { estimateYards, pieceById, quoteTotals } from '../../../shared/estimator';
-import { store } from '../../data';
+import { isDemo, store } from '../../data';
 import type { Client, Job, Quote, Swatch } from '../../data/models';
 import type { QuoteDraft } from '../../data/store';
 import { ErrorNote, Field, Loading } from '../../components/Layout';
@@ -149,6 +150,7 @@ export default function QuoteBuilder() {
       {saved?.sentAt && (
         <section className="card no-print" role="status">
           <p>Sent. The client sees the quote on their job link. Send them this link by text or email:</p>
+          {isDemo && <p className="notice">Demo mode: the job link only opens in this browser, so a real client could not open it yet.</p>}
           <p style={{ wordBreak: 'break-all' }}>{link}</p>
           <div className="row">
             <button onClick={() => navigator.clipboard?.writeText(link).then(() => announce('Link copied.'))}>Copy link</button>

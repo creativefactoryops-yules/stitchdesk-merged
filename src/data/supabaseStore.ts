@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // REAL backend: Supabase (Postgres + Auth magic link + Storage bucket "photos").
 // Row-level security in supabase/schema.sql keeps each shop's data to its own staff.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';

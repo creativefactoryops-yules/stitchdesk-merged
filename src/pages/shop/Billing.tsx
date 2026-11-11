@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { PageHeading } from '../../lib/a11y';
 import { trialDaysLeft } from '../../lib/format';
 import { useShop } from './ShopApp';

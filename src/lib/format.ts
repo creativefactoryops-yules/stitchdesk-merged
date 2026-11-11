@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 export { money } from '../../shared/estimator';
 
 export const todayIso = () => new Date().toLocaleDateString('en-CA');

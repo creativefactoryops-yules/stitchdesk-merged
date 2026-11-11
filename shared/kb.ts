@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Keyword + alias retrieval over the shop book.
 // Scores each entry against title, aliases and text. Aliases carry the other
 // names a term goes by (welt = piping = cording), so they weigh the most.

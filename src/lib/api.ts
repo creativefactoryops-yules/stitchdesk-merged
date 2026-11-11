@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import type { ChatTurn, JobSheet, FaqEntry } from '../../shared/types';
 import { OFFLINE_MESSAGE } from '../../shared/prompt';
 import { dreamPrompt, photoPrompt, pollinationsUrl, RENDER_LABEL, type DreamAnswers } from '../../shared/render';

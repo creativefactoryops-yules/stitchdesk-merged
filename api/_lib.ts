@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Small helpers shared by the /api functions. Files starting with "_" are not routes on Vercel.
 
 import type { IncomingMessage, ServerResponse } from 'node:http';

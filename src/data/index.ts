@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { localStore } from './localStore';
 import { createSupabaseStore } from './supabaseStore';
 import type { DataStore } from './store';

@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // AUTO-GENERATED from stitch-kb-all.json (365 shop-book entries). Do not edit by hand.
 // Regenerate: node scripts/gen-kb.mjs
 import type { KbChunk } from './kb.js';

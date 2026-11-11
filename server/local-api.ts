@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Local stand-in for Vercel: serves /api/* with the same handlers, and the built app from dist/.
 // Usage:  npm run dev:api            (API on http://localhost:8787, Vite dev proxies /api to it)
 //         SERVE_DIST=1 npm run dev:api   (also serves dist/ with SPA fallback, for smoke tests)

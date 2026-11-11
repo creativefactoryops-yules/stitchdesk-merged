@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Yardage and cost estimator.
 // The sofa formula is the one the live Stitch app used:
 //   yards = (W + 2*D + 12) / 36 * 2.5 + 2      (W and D in inches, 54" plain fabric)

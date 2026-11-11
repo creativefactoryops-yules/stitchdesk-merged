@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Demo data for "Maple Upholstery (demo)". Every price here is a made-up DEMO rate,
 // shown only so the app can be tried. A real shop sets its own in Settings.
 import type { ChatTurn, FaqEntry, ShopRates } from '../../shared/types';

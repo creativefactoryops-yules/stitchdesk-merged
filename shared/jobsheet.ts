@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Pulls job details out of what the client types or says.
 // "width is 75 and depth is 45" -> width 75, depth 45.
 // Deterministic on purpose: the job sheet must not depend on the AI being online.

@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 /** Read an image file and shrink it to fit max x max as JPEG. Keeps uploads small for phones and the API. */
 export async function fileToDataUrl(file: File, max = 768, quality = 0.82): Promise<string> {
   if (!file.type.startsWith('image/')) throw new Error('Please choose a photo (JPEG, PNG or WebP).');

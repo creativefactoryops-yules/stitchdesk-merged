@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // POST /api/chat
 // Body: { history: ChatTurn[] (full conversation, newest last), sheet?: JobSheet, shopSlug?: string, shop?: {...demo shop} }
 // Returns: { reply, sheet, offline, model?, sources }

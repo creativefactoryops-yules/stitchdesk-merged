@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Shared types used by the browser app and the /api functions.
 
 export type Units = 'in' | 'cm';

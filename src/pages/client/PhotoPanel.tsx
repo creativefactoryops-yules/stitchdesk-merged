@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { useState } from 'react';
 import { PIECES, pieceById } from '../../../shared/estimator';
 import { Field, ErrorNote } from '../../components/Layout';
@@ -5,6 +6,7 @@ import { RenderImage } from '../../components/RenderImage';
 import { PageHeading, useAnnounce } from '../../lib/a11y';
 import { renderFromPhoto, type RenderResult } from '../../lib/api';
 import { fileToDataUrl } from '../../lib/image';
+import { isDemo } from '../../data';
 import { usePortal } from './ShopPortal';
 
 const STYLES = ['Keep it the same', 'Modern clean', 'Mid-century', 'Traditional', 'Glam', 'Farmhouse'];
@@ -32,12 +34,16 @@ export default function PhotoPanel() {
     }
   }
 
+  // /api/health says whether photo-based editing (Cloudflare) is switched on. Unknown counts as off.
+  const usesPhoto = Boolean(p.health?.photoRender);
+
   async function go() {
-    if (!p.beforePhoto) return setError('Add a photo of your piece first.');
+    if (usesPhoto && !p.beforePhoto) return setError('Add a photo of your piece first.');
     setBusy(true);
     setError(null);
     const r = await renderFromPhoto({
-      image: p.beforePhoto,
+      // The photo is only sent when the shop's photo service is on; otherwise it stays on this phone.
+      image: usesPhoto ? p.beforePhoto ?? '' : '',
       piece: pieceById(piece).label,
       fabric,
       colour,
@@ -53,10 +59,22 @@ export default function PhotoPanel() {
 
   return (
     <>
-      <PageHeading>Before and after preview</PageHeading>
-      <p className="muted">Add a photo of your piece, pick a fabric and colour, and see a preview. AI preview, final may vary.</p>
+      <PageHeading>{usesPhoto ? 'Before and after preview' : 'Style preview'}</PageHeading>
+      {usesPhoto ? (
+        <p className="muted">Add a photo of your piece, pick a fabric and colour, and see your piece in it. AI preview, final may vary.</p>
+      ) : (
+        <p className="notice">
+          Photo editing is switched off right now. Stitch makes a style preview from your description (piece, fabric, colour,
+          style). It is not an edit of your photo and will not match your piece exactly. If you add a photo, it is shown beside
+          the preview for comparison and is not sent anywhere.
+        </p>
+      )}
       <section className="card">
-        <Field id="photo-file" label="Photo of your piece" hint="Take it from the front, in good light. It stays private to the shop.">
+        <Field
+          id="photo-file"
+          label={usesPhoto ? 'Photo of your piece' : 'Photo of your piece (optional, for comparison)'}
+          hint={`Take it from the front, in good light. It stays on this phone and goes to the shop only if you book${isDemo ? ' (demo: nothing leaves this phone)' : ''}.`}
+        >
           <input id="photo-file" type="file" accept="image/*" capture="environment" onChange={(e) => onFile(e.target.files?.[0])} />
         </Field>
         <div className="grid two">
@@ -93,7 +111,7 @@ export default function PhotoPanel() {
           </Field>
         </div>
         <button className="primary" onClick={go} disabled={busy}>
-          {busy ? 'Making the preview…' : 'Make my preview'}
+          {busy ? 'Making the preview…' : usesPhoto ? 'Make my preview' : 'Make my style preview'}
         </button>
         <ErrorNote error={error} />
       </section>
@@ -101,12 +119,12 @@ export default function PhotoPanel() {
         {p.beforePhoto && (
           <figure className="render card tight">
             <img src={p.beforePhoto} alt="Before: your uploaded photo" />
-            <figcaption style={{ color: 'var(--muted)' }}>Before</figcaption>
+            <figcaption style={{ color: 'var(--muted)' }}>{usesPhoto ? 'Before' : 'Your photo (not used by the preview)'}</figcaption>
           </figure>
         )}
         {result && (
           <div className="card tight">
-            <RenderImage url={result.imageUrl} alt={`After: ${pieceById(piece).label} in ${colour} ${fabric}`} note={result.note} />
+            <RenderImage url={result.imageUrl} alt={`${usesPhoto ? 'After' : 'Style preview'}: ${pieceById(piece).label} in ${colour} ${fabric}`} note={result.note} />
           </div>
         )}
       </div>

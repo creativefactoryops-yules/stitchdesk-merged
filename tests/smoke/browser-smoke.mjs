@@ -21,32 +21,68 @@ async function axe(name) {
   ok(serious.length === 0, `axe ${name}: ${serious.length} serious/critical issues ${serious.map((v) => v.id + '(' + v.nodes.length + ')').join(', ')}`);
 }
 
-// 1. Client chat, 3 turns, memory
+// 1. Client chat (restored old look), 3 turns, memory. Voice stubbed so we can see what gets spoken.
+await ctx.addInitScript(() => {
+  window.__spoken = [];
+  if (window.speechSynthesis) {
+    window.speechSynthesis.speak = (u) => { window.__spoken.push(u.text); setTimeout(() => u.onend && u.onend(), 50); };
+  }
+});
 await page.goto(`${BASE}/s/maple-demo`);
-await page.getByRole('heading', { level: 1, name: 'Chat with Stitch' }).waitFor();
+await page.getByRole('heading', { level: 1, name: "Hey, it's Stitch." }).waitFor();
+ok(await page.getByText('Stitch • CR-7 • Now').isVisible(), 'old greeting bubble "Stitch • CR-7 • Now"');
+ok((await page.getByRole('button', { name: "Read Stitch's replies aloud" }).getAttribute('aria-pressed')) === 'true', 'Voice On by default (like the old app)');
+for (const chip of ['Sofa', 'Chair', 'Ottoman', 'Headboard', 'Commercial', 'Marine']) ok(await page.getByRole('button', { name: `Quick pick: ${chip}` }).isVisible(), `chip ${chip}`);
+ok((await page.getByLabel('Your message').getAttribute('placeholder')).startsWith('Ask:'), 'input placeholder starts with "Ask:"');
+ok(await page.getByRole('button', { name: 'Listen: talk instead of typing' }).isVisible(), 'LISTEN button');
+await page.waitForTimeout(1200);
+ok((await page.evaluate(() => window.__spoken)).some((t) => t.startsWith("Hey, it's Stitch")), 'greeting spoken aloud when Voice is on');
 await axe('chat');
 const say = async (t, n) => {
   await page.getByLabel('Your message').fill(t);
   await page.getByRole('button', { name: 'Send', exact: true }).click();
-  await page.locator('.msg.stitch:not([aria-hidden])').nth(n - 1).waitFor({ timeout: 15000 });
+  await page.locator('[data-msg="stitch"]').nth(n).waitFor({ timeout: 15000 }); // nth(0) is the greeting
 };
 await say('Hi, I have an old sofa that needs redoing', 1);
+const liveVoiceOn = await page.locator('[aria-live="polite"][aria-atomic="true"]').first().innerText();
+ok(!liveVoiceOn.includes('[mock]'), 'Voice On: reply is NOT also put in the live region (no double-speak with TalkBack)');
+ok((await page.evaluate(() => window.__spoken)).some((t) => t.includes('[mock]')), 'Voice On: reply spoken aloud');
+await page.getByRole('button', { name: "Read Stitch's replies aloud" }).click();
+ok((await page.getByRole('button', { name: "Read Stitch's replies aloud" }).getAttribute('aria-pressed')) === 'false', 'Voice Off toggle');
 await say('width is 75 and depth is 45', 2);
 await say('inches. I want green velvet', 3);
-const replies = await page.locator('.msg.stitch:not([aria-hidden])').allInnerTexts();
+const replies = (await page.locator('[data-msg="stitch"]').allInnerTexts()).slice(1);
 console.log(replies.join('\n---\n'));
 ok(replies.length === 3, '3 Stitch replies');
-ok(replies[0].includes("Hi, I'm Stitch") && !replies[1].includes("Hi, I'm Stitch") && !replies[2].includes("Hi, I'm Stitch"), 'intro only once');
+ok(replies.every((r) => !r.includes("Hi, I'm Stitch")), 'no re-intro: the greeting bubble was the only intro');
+ok(/You • \d\d:\d\d/.test(await page.locator('[data-msg="user"]').first().innerText()), 'bubble label "You • HH:MM"');
 ok(replies[2].includes('turns=5') && replies[2].includes('first client message="Hi, I have an old sofa'), 'turn 3 carried full history');
-const sheetText = await page.locator('.sheet').innerText();
-ok(/Width\s*75 in/.test(sheetText) && /Depth\s*45 in/.test(sheetText) && /green velvet/.test(sheetText), 'job sheet filled itself');
 const live = await page.locator('[aria-live="polite"][aria-atomic="true"]').first().innerText();
-ok(live.startsWith('Stitch says:'), 'aria-live announces the newest reply');
+ok(live.startsWith('Stitch says:') && live.includes('turns=5'), 'Voice Off: aria-live announces only the newest reply');
 await page.screenshot({ path: `${SHOTS}/01-chat.png`, fullPage: true });
 
-// memory survives reload
+// footer + trial bar
+const foot = await page.locator('footer').innerText();
+ok(foot.includes('© 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved.'), 'copyright footer on client page');
+const links = await page.locator('footer a').evaluateAll((as) => as.map((a) => [a.href, a.target, a.rel, a.getAttribute('aria-label')]));
+ok(links.length === 7 && links.every(([, t, r, l]) => t === '_blank' && r === 'noopener' && /opens in a new tab/.test(l)), 'footer links: 7, new tab, noopener, labelled');
+await page.getByRole('button', { name: 'Subscribe — $29/mo' }).click();
+const dlg = await page.getByRole('dialog').innerText();
+ok(/nothing is charged/.test(dlg) && /does not unlock anything by itself/.test(dlg), 'Subscribe panel is honest about the stub');
+await axe('subscribe panel');
+await page.keyboard.press('Escape');
+
+// memory survives reload (greeting + 3 turns + 3 replies)
 await page.reload();
-ok((await page.locator('.msg.stitch').count()) === 3, 'conversation kept after reload');
+ok((await page.locator('[data-msg="stitch"]').count()) === 4, 'conversation kept after reload');
+
+// photo tab is honest when photo editing (Cloudflare) is off
+await page.goto(`${BASE}/s/maple-demo/photo`);
+await page.getByRole('heading', { level: 1, name: 'Style preview' }).waitFor();
+ok(/not an edit of your photo/.test(await page.locator('main').innerText()), 'photo tab says it is a style preview, not a photo edit');
+await axe('photo');
+await page.goto(`${BASE}/s/maple-demo`);
+await page.getByRole('heading', { level: 1, name: "Hey, it's Stitch." }).waitFor();
 
 // 2. Estimate
 await page.getByRole('link', { name: 'Estimate', exact: true }).click();
@@ -58,7 +94,7 @@ await page.screenshot({ path: `${SHOTS}/02-estimate.png`, fullPage: true });
 await axe('estimate');
 
 // 3. Book
-await page.getByRole('link', { name: 'Book this' }).first().click();
+await page.getByRole('link', { name: 'Book', exact: true }).click();
 await page.getByRole('heading', { level: 1, name: 'Book this' }).waitFor();
 await page.getByLabel('Your name').fill('Test Client');
 await page.getByRole('textbox', { name: 'Email' }).fill('test@example.com');
@@ -118,6 +154,7 @@ await page.getByLabel('Message the shop').fill('Can I drop it off Saturday?');
 await page.getByRole('button', { name: 'Send', exact: true }).click();
 await page.getByText('Can I drop it off Saturday?').waitFor();
 ok(true, 'client message posted');
+ok((await page.locator('footer').innerText()).includes('© 2026 Yules'), 'copyright footer on /j/ page');
 await page.screenshot({ path: `${SHOTS}/06-job.png`, fullPage: true });
 await axe('job page');
 
@@ -126,11 +163,12 @@ await page.goto(`${BASE}/shop`);
 await page.getByRole('heading', { level: 1, name: 'Dashboard' }).waitFor();
 const dash = await page.locator('main').innerText();
 ok(/Revenue this month/.test(dash) && /New leads/.test(dash), 'dashboard renders');
+ok((await page.locator('footer').innerText()).includes('© 2026 Yules'), 'copyright footer on /shop');
 await page.screenshot({ path: `${SHOTS}/07-dashboard.png`, fullPage: true });
 await axe('dashboard');
 
 // 8. other pages load without errors
-for (const p of ['/shop/clients', '/shop/suppliers', '/shop/swatches', '/shop/teach', '/shop/settings', '/shop/billing', '/s/maple-demo/swatches', '/s/maple-demo/dream', '/s/maple-demo/photo', '/']) {
+for (const p of ['/shop/clients', '/shop/suppliers', '/shop/swatches', '/shop/teach', '/shop/settings', '/shop/billing', '/s/maple-demo/swatches', '/s/maple-demo/dream', '/s/maple-demo/photo', '/s/maple-demo/status', '/']) {
   await page.goto(`${BASE}${p}`);
   await page.locator('h1').first().waitFor();
   ok(true, `loads ${p}: ${await page.locator('h1').first().innerText()}`);

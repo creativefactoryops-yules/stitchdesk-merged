@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // GET /api/health: which optional services are switched on (never returns the keys).
 import { env, sendJson, supabaseEnv, type Req, type Res } from './_lib.js';
 

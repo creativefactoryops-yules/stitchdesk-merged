@@ -1,9 +1,11 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { Link } from 'react-router-dom';
 import { PIECES, type FoamChoice } from '../../../shared/estimator';
 import type { Units } from '../../../shared/types';
 import { Field } from '../../components/Layout';
 import { PageHeading } from '../../lib/a11y';
 import { money } from '../../lib/format';
+import { JobSheetView } from '../../components/JobSheetView';
 import { usePortal } from './ShopPortal';
 
 export function EstimateTable({ est }: { est: NonNullable<ReturnType<typeof usePortal>['est']> }) {
@@ -57,6 +59,20 @@ export default function EstimatePanel() {
       <p className="muted">
         Uses {p.data.shop.name}'s own rates. Approximate, confirmed after the shop inspects your piece.
       </p>
+      <JobSheetView sheet={p.sheet} />
+      <p className="hint">Stitch fills the job sheet from your chat. You can change anything below.</p>
+      {p.history.length > 0 && (
+        <p>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('Start a new conversation? This clears the chat and job sheet on this device.')) p.reset();
+            }}
+          >
+            Start a new conversation
+          </button>
+        </p>
+      )}
       <form className="card" onSubmit={(e) => e.preventDefault()} aria-label="Estimate details">
         <Field id="est-piece" label="Piece">
           <select id="est-piece" value={s.piece ?? ''} onChange={(e) => setSheet({ piece: e.target.value || null })}>

@@ -1,4 +1,11 @@
-# Stitch Voice Chat v2
+<!-- © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. -->
+# Stitch Voice Chat v2.1
+
+Proprietary software, © 2026 Yules / CreativeFactory.studio. See `LICENSE`: no copying or redistribution without written permission.
+
+**v2.1:** the client chat page (`/s/your-shop`) is back to the old Stitch look: copper CR-7, Voice On/Off, LISTEN, quick-pick chips,
+lime SEND, trial bar and watermark, with the v2 brain underneath. Estimate, photo preview, dream build, fabrics, booking and
+"My job" are tab pills. See `CHANGES.md` for the full list.
 
 An AI front desk for upholstery shops, by CreativeFactory.studio / buildyou (Toronto).
 
@@ -18,7 +25,7 @@ If the Supabase settings are empty, the app runs in **demo mode**: all data live
 (localStorage), seeded with "Maple Upholstery (demo)". Open `/s/maple-demo` as a client and `/shop` as staff.
 Chat still calls `/api/chat` when it can reach it; with no AI key Stitch says it is offline (it never makes up answers).
 
-There is also a single-file phone preview at `../preview/index.html` (build it with `npm run build:preview-file`).
+There is also a single-file phone preview (build it with `npm run build:preview-file`; v2.1 copy: `../preview/index-v21.html`).
 It needs no server. Chat in that file always shows the offline notice, because there is no `/api` behind it.
 
 ---
@@ -160,13 +167,21 @@ Database rules can be checked on plain Postgres with `supabase/tests/supabase-st
 - `server/local-api.ts`: runs the API on your computer.
 - `scripts/build-preview-file.mjs`: builds the single-file preview.
 
+## Voice and screen readers
+
+Voice is On by default, like the old app (setting saved on the phone as `stitch_voice`). With Voice On, Stitch reads each reply
+aloud and the screen-reader live region stays quiet, so TalkBack does not read the same reply twice. With Voice Off, the
+newest reply is announced once by the screen reader. If the phone cannot speak, the reply is announced instead.
+
 ## Known limits
 
 - Billing is a placeholder: no payments are taken.
 - Stitch does not send emails or texts. When a quote is sent, staff copy the client link or use the Email/Text buttons
   on their own phone. Clients see shop replies when they open their job link.
-- Voice input depends on the browser (works in Chrome on Android; not in Firefox). "Read replies aloud" is off by
-  default so it does not talk over a screen reader.
+- Voice input depends on the browser (works in Chrome on Android; not in Firefox). Many browsers block the spoken
+  greeting until the visitor taps something; replies after that are spoken normally.
+- Without Cloudflare keys, the photo tab makes a style preview from the description, not an edit of the photo, and says so.
+- Pollinations (free previews) allows about 1 image every 45 seconds per visitor.
 - The chat limiter is per server instance only. Heavy abuse would need a shared limiter (for example Upstash).
 
-© CreativeFactory.studio. All rights reserved.
+© 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved.

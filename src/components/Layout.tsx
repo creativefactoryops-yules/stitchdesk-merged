@@ -1,6 +1,8 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { isDemo } from '../data';
+import { SiteFooter } from './Footer';
 
 export function Layout({ title, nav, children, home = '/' }: { title?: string; nav?: ReactNode; children: ReactNode; home?: string }) {
   return (
@@ -20,14 +22,12 @@ export function Layout({ title, nav, children, home = '/' }: { title?: string; n
       <main id="main" tabIndex={-1} className="wrap">
         {isDemo && (
           <p className="demo-banner">
-            Demo mode: no database is connected, so everything is saved only in this browser.
+            Demo mode: no database is connected, so everything is saved only on this phone (in this browser).
           </p>
         )}
         {children}
       </main>
-      <footer className="wrap muted no-print" style={{ paddingTop: 0 }}>
-        <small>Stitch Voice Chat by CreativeFactory.studio. AI previews and estimates are approximate.</small>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

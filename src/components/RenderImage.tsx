@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { useState } from 'react';
 import { RENDER_LABEL } from '../../shared/render';
 
@@ -9,7 +10,7 @@ export function RenderImage({ url, alt, note }: { url: string; alt: string; note
       {state === 'loading' && <p role="status">Painting the preview. This can take 10 to 30 seconds…</p>}
       {state === 'error' && (
         <p role="alert" className="error">
-          The image service did not answer. Try again in a minute.
+          The free image service did not answer. It allows about 1 picture every 45 seconds per phone, so wait a minute and try again.
         </p>
       )}
       <img

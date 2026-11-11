@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import type { ChatTurn, FaqEntry, JobSheet, ShopPublic, Stage, Units } from '../../shared/types';
 
 export interface Shop extends ShopPublic {

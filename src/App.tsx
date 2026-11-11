@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom';
 import { Announcer } from './lib/a11y';
 import Home from './pages/Home';

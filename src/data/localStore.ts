@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // DEMO MODE backend: everything lives in this browser's localStorage. No server, no accounts.
 import { quoteTotals } from '../../shared/estimator';
 import { pieceById } from '../../shared/estimator';

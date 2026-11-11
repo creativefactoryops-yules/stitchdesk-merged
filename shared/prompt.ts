@@ -1,3 +1,4 @@
+/* © 2026 Yules · CreativeFactory.studio · buildyou. Stitch, CR-7 and this software are original work. All rights reserved. */
 // Builds what Stitch sees: the system instruction and the conversation turns.
 
 import type { KbChunk } from './kb.js';
@@ -72,6 +73,8 @@ export function buildSystemInstruction(opts: {
       ? 'This is the start of the conversation: greet the client once, say who you are in one short line, then help.'
       : 'You are mid-conversation. Do NOT greet again and do NOT introduce yourself again. Carry on from what was already said, and remember everything the client already told you.',
     'Write every number as digits (75, not seventy-five).',
+    'Use Canadian spelling (colour, centimetres, metre).',
+    'When the client gives a measurement, repeat it back with its units once you know them (for example "75 by 45 inches"), so they can catch a mistake.',
     'Ask for only ONE missing detail at a time, and only when you need it. Never ask for something the job sheet already has.',
     sheet.units || askedUnits
       ? 'Do not ask about inches or centimetres again.'
